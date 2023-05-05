@@ -23,12 +23,16 @@ impl CLIhandler {
         self.objects.append(&mut vec![object.clone()]);
     }
 
-    pub fn edit_object(&mut self){
+    pub fn get_object(&mut self, name: String) -> Option<&mut Object>{
         for obj in &mut self.objects {
-            match obj {
-                Object::Statusbar(ref mut o) => o.progress = 80,
+            let o = match obj {
+                Object::Statusbar(ref mut o) => o,
+            };
+            if o.name == name {
+                return Some(obj);
             }
         }
+        None
     }
 
     pub fn parse_args(&mut self) {
@@ -60,6 +64,14 @@ pub enum Object {
     Statusbar(Statusbar),
 }
 
+impl Object {
+    pub fn edit(&mut self) {
+        match self {
+            Object::Statusbar(obj) => obj.edit(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Statusbar {
     pub progress: i32,
@@ -69,5 +81,9 @@ pub struct Statusbar {
 impl Statusbar {
     pub fn new(name: String) -> Statusbar {
         Statusbar { progress: 60, name }
+    }
+
+    pub fn edit(&mut self) {
+        self.progress = 80;
     }
 }
