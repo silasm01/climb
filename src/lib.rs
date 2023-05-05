@@ -1,6 +1,6 @@
 use std::vec;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CLIhandler {
     commands: Vec<Command>,
     objects: Vec<Object>,
@@ -23,16 +23,12 @@ impl CLIhandler {
         self.objects.append(&mut vec![object.clone()]);
     }
 
-    pub fn get_object(&self, name: String) -> Option<Object>{
-        for obj in &self.objects {
-            let o = match &obj {
-                    Object::Statusbar(e) => e,
-                };
-            if o.name == name {
-                return Some(Object::Statusbar(o.clone()));
+    pub fn edit_object(&mut self){
+        for obj in &mut self.objects {
+            match obj {
+                Object::Statusbar(ref mut o) => o.progress = 80,
             }
-        };
-        None
+        }
     }
 
     pub fn parse_args(&mut self) {
@@ -47,7 +43,7 @@ impl CLIhandler {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Command {
     trigger: String,
     function: fn(),
@@ -64,15 +60,6 @@ pub enum Object {
     Statusbar(Statusbar),
 }
 
-impl Object {
-    pub fn edit(self, progress: i32, name: String) {
-        //let t = self.clone();
-        match self {
-            Object::Statusbar(mut obj) => obj.edit(progress, name), //obj.name = "test3".to_string()
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Statusbar {
     pub progress: i32,
@@ -82,11 +69,5 @@ pub struct Statusbar {
 impl Statusbar {
     pub fn new(name: String) -> Statusbar {
         Statusbar { progress: 60, name }
-    }
-
-    fn edit(mut self, progress: i32, name: String) {
-        self.progress = progress;
-        self.name = name;
-        println!("k,, {:?}", self)
     }
 }

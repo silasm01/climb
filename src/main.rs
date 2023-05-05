@@ -9,7 +9,7 @@ fn main() {
     cli.add_object(Object::Statusbar(Statusbar::new("test".to_string())));
     println!("{:?}", cli);
     cli.parse_args();
-    cli.get_object("test".to_string()).unwrap().edit(70, "test2".to_string());
+    cli.edit_object();
     println!("fin: {:?}", cli);
 }
 
