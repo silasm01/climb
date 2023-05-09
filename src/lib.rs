@@ -1,4 +1,4 @@
-use std::vec;
+use std::{vec, fmt::Debug, any::{Any, TypeId}};
 
 #[derive(Debug, Clone)]
 pub struct CLIhandler {
@@ -23,14 +23,31 @@ impl CLIhandler {
         self.objects.append(&mut vec![object.clone()]);
     }
 
-    pub fn get_object(&mut self, name: String) -> Option<&mut Object>{
+    pub fn get_object(&mut self, name: String) -> Option<&mut dyn ObjectTrait>
+    {
         for obj in &mut self.objects {
-            let o = match obj {
+            let o: &mut dyn ObjectTrait = match obj {
                 Object::Statusbar(ref mut o) => o,
+                Object::Statusbar2(ref mut e) => e,
             };
-            if o.name == name {
-                return Some(obj);
+            //println!("oty: {:?}, {:?}", o.as_any().type_id(), o.as_any_mut().downcast_mut::<Statusbar>().unwrap().name);
+            match o.as_any().type_id() {
+                TypeId::of::<Statusbar>() => (),
+                TypeId::of::<Statusbar2>() => (),
+                _ => ()
             }
+            // if o.as_any().type_id() == TypeId::of::<Statusbar>() {
+            //     if o.as_any_mut().downcast_mut::<Statusbar>().unwrap().name == name {
+            //         return Some(o.as_any_mut().downcast_mut::<Statusbar2>().unwrap());
+            //     }
+            // }
+            // if o.as_any().type_id() == TypeId::of::<Statusbar2>() {
+            //     println!("{:?}, {:?}", o.as_any_mut().downcast_mut::<Statusbar2>().unwrap().name, name);
+            //     if o.as_any_mut().downcast_mut::<Statusbar2>().unwrap().name == name {
+            //         println!("worked");
+            //         return Some(o.as_any_mut().downcast_mut::<Statusbar2>().unwrap());
+            //     }
+            // }
         }
         None
     }
@@ -62,25 +79,59 @@ impl Command {
 #[derive(Debug, Clone)]
 pub enum Object {
     Statusbar(Statusbar),
+    Statusbar2(Statusbar2)
 }
 
-impl Object {
-    pub fn edit(&mut self) {
-        match self {
-            Object::Statusbar(obj) => obj.edit(),
-        }
+pub trait ObjectTrait: Any {
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+impl ObjectTrait for Statusbar {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+}
+impl ObjectTrait for Statusbar2 {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Statusbar {
     pub progress: i32,
-    name: String,
+    pub name: String,
 }
 
 impl Statusbar {
     pub fn new(name: String) -> Statusbar {
         Statusbar { progress: 60, name }
+    }
+
+    pub fn edit(&mut self) {
+        self.progress = 80;
+    }
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Statusbar2 {
+    pub progress: i32,
+    pub name: String,
+}
+
+impl Statusbar2 {
+    pub fn new(name: String) -> Statusbar2 {
+        Statusbar2 { progress: 60, name }
     }
 
     pub fn edit(&mut self) {
