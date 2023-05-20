@@ -1,4 +1,6 @@
-use std::{vec, fmt::Debug, any::{Any, TypeId}};
+use std::{fmt::Debug, io::stdout, println,vec};
+
+use crossterm::{cursor::*, execute, terminal::*};
 
 #[derive(Debug, Clone)]
 pub struct CLIhandler {
@@ -19,10 +21,8 @@ impl CLIhandler {
             .append(&mut vec![Command::new(trigger, function)])
     }
 
-    pub fn add_object(&mut self, obj: Object) -> &mut Object {
+    pub fn add_object(&mut self, obj: Object) {
         self.objects.append(&mut vec![obj]);
-        println!("{:?}",self.objects);
-        self.objects.last_mut().unwrap()
     }
 
     pub fn parse_args(&mut self) {
@@ -34,6 +34,24 @@ impl CLIhandler {
                 }
             })
         })
+    }
+
+    pub fn get_object(&mut self, name: String) -> Option<&mut Object> {
+        for obj in &mut self.objects {
+            if match obj {
+                Object::Statusbar(ref mut o) => o.name.clone(),
+                Object::Statusbar2(ref mut o) => o.name.clone(),
+            } == name {
+                println!("{:?}", obj);
+                return Some(obj)
+            }
+        }
+        None
+    }
+
+    pub fn display(&self) {
+        execute!(stdout(), Clear(crossterm::terminal::ClearType::All)).unwrap();
+        self.objects.iter().for_each(|obj| obj.display())
     }
 }
 
@@ -52,10 +70,22 @@ impl Command {
 #[derive(Debug, Clone)]
 pub enum Object {
     Statusbar(Statusbar),
-    Statusbar2(Statusbar2)
+    Statusbar2(Statusbar2),
 }
 
-pub trait ObjectTrait{}
+impl Object {
+    fn display(&self) {
+        match self {
+            Object::Statusbar(o) => o.display(),
+            Object::Statusbar2(o) => o.display(),
+        }
+    }
+}
+
+trait ObjectTrait {}
+
+impl ObjectTrait for Statusbar {}
+impl ObjectTrait for Statusbar2 {}
 
 #[derive(Debug, Clone)]
 pub struct Statusbar {
@@ -68,8 +98,14 @@ impl Statusbar {
         Statusbar { progress: 60, name }
     }
 
-    pub fn edit(&mut self) {
-        self.progress = 80;
+    fn display(&self) {
+        execute!(stdout(), MoveToNextLine(1),).unwrap();
+        print!("{} [", self.name);
+
+        for _ in 0..(size().unwrap().0 - self.name.len() as u16 - 3) * self.progress as u16 / 100 {
+            print!("-");
+        }
+        println!("]")
     }
 }
 
@@ -84,7 +120,13 @@ impl Statusbar2 {
         Statusbar2 { progress: 60, name }
     }
 
-    pub fn edit(&mut self) {
-        self.progress = 80;
+    fn display(&self) {
+        execute!(stdout(), MoveToNextLine(1),).unwrap();
+        print!("{} [", self.name);
+
+        for _ in 0..(size().unwrap().0 - self.name.len() as u16 - 3) * self.progress as u16 / 100 {
+            print!("-");
+        }
+        println!("]")
     }
 }
