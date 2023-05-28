@@ -1,6 +1,13 @@
-use std::{fmt::Debug, io::stdout, println,vec};
+pub mod objects;
+pub mod commands;
 
-use crossterm::{cursor::*, execute, terminal::*};
+use objects::Object;
+use commands::Command;
+
+use std::{fmt::Debug, io::stdout, vec};
+
+use crossterm::{execute, terminal::*};
+extern crate crossterm;
 
 #[derive(Debug, Clone)]
 pub struct CLIhandler {
@@ -9,6 +16,11 @@ pub struct CLIhandler {
 }
 
 impl CLIhandler {
+    /// Creates new CLI instance
+    /// # Example
+    /// ```
+    /// let cli = climb::CLIhandler::new();
+    /// ```
     pub fn new() -> CLIhandler {
         CLIhandler {
             commands: vec![],
@@ -21,6 +33,13 @@ impl CLIhandler {
             .append(&mut vec![Command::new(trigger, function)])
     }
 
+    /// Adds object to current CLI
+    /// # Example
+    /// ```
+    /// let mut cli = climb::CLIhandler::new();
+    /// cli.add_object(climb::Objects::percentbar::Percentbar::new(45, "test".to_string()));
+    /// ```
+    /// Check out the *Objects* module for complete list of objects available
     pub fn add_object(&mut self, obj: Object) {
         self.objects.append(&mut vec![obj]);
     }
@@ -39,94 +58,25 @@ impl CLIhandler {
     pub fn get_object(&mut self, name: String) -> Option<&mut Object> {
         for obj in &mut self.objects {
             if match obj {
-                Object::Statusbar(ref mut o) => o.name.clone(),
-                Object::Statusbar2(ref mut o) => o.name.clone(),
-            } == name {
-                println!("{:?}", obj);
-                return Some(obj)
+                Object::Percentbar(ref mut o, _) => o.name.clone(),
+                Object::UserInput(ref mut o) => o.name.clone(),
+            } == name
+            {
+                return Some(obj);
             }
         }
         None
     }
 
+    /// Displays all objects of the CLI
+    /// # Example
+    /// ```
+    /// let mut cli = climb::CLIhandler::new();
+    /// cli.add_object(climb::Objects::percentbar::Percentbar::new(45, "test".to_string()));
+    /// cli.display()
+    /// ```
     pub fn display(&self) {
         execute!(stdout(), Clear(crossterm::terminal::ClearType::All)).unwrap();
-        self.objects.iter().for_each(|obj| obj.display())
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Command {
-    trigger: String,
-    function: fn(),
-}
-
-impl Command {
-    fn new(trigger: String, function: fn()) -> Command {
-        Command { trigger, function }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum Object {
-    Statusbar(Statusbar),
-    Statusbar2(Statusbar2),
-}
-
-impl Object {
-    fn display(&self) {
-        match self {
-            Object::Statusbar(o) => o.display(),
-            Object::Statusbar2(o) => o.display(),
-        }
-    }
-}
-
-trait ObjectTrait {}
-
-impl ObjectTrait for Statusbar {}
-impl ObjectTrait for Statusbar2 {}
-
-#[derive(Debug, Clone)]
-pub struct Statusbar {
-    pub progress: i32,
-    pub name: String,
-}
-
-impl Statusbar {
-    pub fn new(name: String) -> Statusbar {
-        Statusbar { progress: 60, name }
-    }
-
-    fn display(&self) {
-        execute!(stdout(), MoveToNextLine(1),).unwrap();
-        print!("{} [", self.name);
-
-        for _ in 0..(size().unwrap().0 - self.name.len() as u16 - 3) * self.progress as u16 / 100 {
-            print!("-");
-        }
-        println!("]")
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Statusbar2 {
-    pub progress: i32,
-    pub name: String,
-}
-
-impl Statusbar2 {
-    pub fn new(name: String) -> Statusbar2 {
-        Statusbar2 { progress: 60, name }
-    }
-
-    fn display(&self) {
-        execute!(stdout(), MoveToNextLine(1),).unwrap();
-        print!("{} [", self.name);
-
-        for _ in 0..(size().unwrap().0 - self.name.len() as u16 - 3) * self.progress as u16 / 100 {
-            print!("-");
-        }
-        println!("]")
+        self.objects.iter().for_each(|obj| obj.clone().display(0))
     }
 }
