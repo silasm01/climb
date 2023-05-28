@@ -8,7 +8,7 @@ use std::{fmt::Debug, io::stdout, vec};
 
 use crossterm::{execute, terminal::*};
 extern crate crossterm;
-//
+
 #[derive(Debug, Clone)]
 pub struct CLIhandler {
     commands: Vec<Command>,

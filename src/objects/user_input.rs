@@ -1,7 +1,7 @@
 use crate::Object;
 use crossterm::{cursor::*, execute};
 use std::{fmt::Debug, io::stdout, println};
-//
+
 #[derive(Debug, Clone)]
 pub enum ChoiceStyle {
     HoriList,
