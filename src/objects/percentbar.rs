@@ -1,7 +1,7 @@
 use crate::Object;
 use crossterm::{cursor::*, execute, terminal::*};
 use std::{fmt::Debug, io::stdout, println, vec};
-
+//
 /// Displays using percent format.
 #[derive(Debug, Clone)]
 pub struct Percentbar {
