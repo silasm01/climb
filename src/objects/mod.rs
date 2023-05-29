@@ -1,50 +1,24 @@
+use std::fmt::Debug;
+
 use self::{percentbar::Percentbar, user_input::UserInput};
 
 pub mod percentbar;
 pub mod user_input;
 
-#[derive(Debug, Clone)]
-pub enum Object {
-    Percentbar(Percentbar, Vec<Object>),
-    UserInput(UserInput),
+#[derive(Debug)]
+pub enum Obj<'a> {
+    Percentbar(&'a mut Percentbar),
+    UserInput(&'a mut UserInput)
 }
 
-impl Object {
-    pub(crate) fn display(&mut self, tabs: i32) {
-        match self {
-            Object::Percentbar(o, i) => {
-                o.display(tabs);
-                for obj in i {
-                    obj.display(tabs + 1)
-                }
-            }
-            Object::UserInput(o) => o.display(tabs),
-        }
-    }
+pub trait Object: Debug {
+    fn display(&mut self, _tabs: i32) {}
 
-    pub fn add_child_object(&mut self, obj: Object) {
-        match self {
-            Object::Percentbar(_, ref mut l) => l.append(&mut vec![obj]),
-            Object::UserInput(_) => todo!(),
-        }
-    }
-
-    pub fn get_child(&mut self, name: String) -> Option<&mut Object> {
-        match self {
-            Object::Percentbar(_, objects) => {
-                for obj in objects {
-                    match obj {
-                        Object::Percentbar(o, _) => {
-                            if o.name == name {
-                                return Some(obj);
-                            }
-                        }
-                        Object::UserInput(_) => todo!(),
-                    }
-                }
-            }
-            Object::UserInput(_) => todo!(),
-        }
+    /// I am about to give up and just want this to work.
+    /// It is 2 am and i dont give a fuck anymore
+    /// I know this is trash but it works so just let it be
+    /// And in 3 months when i return to this project it will be fixed.
+    fn try_into(&mut self, _name: &str) -> Option<Obj> {
         None
     }
 }

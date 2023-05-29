@@ -5,3 +5,4 @@ authors = ["Mohtashim"]
 
 [dependencies]
 crossterm = "0.26.1"
+match_cast = "0.1.2"

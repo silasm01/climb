@@ -1,18 +1,23 @@
-pub mod objects;
 pub mod commands;
+pub mod objects;
+extern crate match_cast;
 
-use objects::Object;
 use commands::Command;
+use objects::{Obj, Object};
 
-use std::{fmt::Debug, io::stdout, vec};
+use std::{
+    fmt::Debug,
+    io::stdout,
+    vec,
+};
 
 use crossterm::{execute, terminal::*};
 extern crate crossterm;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default)]
 pub struct CLIhandler {
     commands: Vec<Command>,
-    objects: Vec<Object>,
+    objects: Vec<Box<dyn Object>>,
 }
 
 impl CLIhandler {
@@ -40,7 +45,7 @@ impl CLIhandler {
     /// cli.add_object(climb::Objects::percentbar::Percentbar::new(45, "test".to_string()));
     /// ```
     /// Check out the *Objects* module for complete list of objects available
-    pub fn add_object(&mut self, obj: Object) {
+    pub fn add_object(&mut self, obj: Box<dyn Object>) {
         self.objects.append(&mut vec![obj]);
     }
 
@@ -55,14 +60,10 @@ impl CLIhandler {
         })
     }
 
-    pub fn get_object(&mut self, name: String) -> Option<&mut Object> {
+    pub fn get_object(&mut self, name: &str) -> Option<Obj> {
         for obj in &mut self.objects {
-            if match obj {
-                Object::Percentbar(ref mut o, _) => o.name.clone(),
-                Object::UserInput(ref mut o) => o.name.clone(),
-            } == name
-            {
-                return Some(obj);
+            if let Some(objects) = obj.try_into(name) {
+                return Some(objects);
             }
         }
         None
@@ -75,8 +76,8 @@ impl CLIhandler {
     /// cli.add_object(climb::Objects::percentbar::Percentbar::new(45, "test".to_string()));
     /// cli.display()
     /// ```
-    pub fn display(&self) {
+    pub fn display(&mut self) {
         execute!(stdout(), Clear(crossterm::terminal::ClearType::All)).unwrap();
-        self.objects.iter().for_each(|obj| obj.clone().display(0))
+        self.objects.iter_mut().for_each(|obj| obj.display(0))
     }
 }
