@@ -5,19 +5,18 @@ extern crate match_cast;
 use commands::Command;
 use objects::{Obj, Object};
 
-use std::{
-    fmt::Debug,
-    io::stdout,
-    vec,
-};
+use std::{fmt::Debug, io::stdout, vec};
 
 use crossterm::{execute, terminal::*};
+
+use crate::objects::InputReturn;
 extern crate crossterm;
 
 #[derive(Debug, Default)]
 pub struct CLIhandler {
     commands: Vec<Command>,
     objects: Vec<Box<dyn Object>>,
+    pub inputs: Vec<InputReturn>,
 }
 
 impl CLIhandler {
@@ -30,6 +29,7 @@ impl CLIhandler {
         CLIhandler {
             commands: vec![],
             objects: vec![],
+            inputs: vec![],
         }
     }
 
@@ -78,6 +78,12 @@ impl CLIhandler {
     /// ```
     pub fn display(&mut self) {
         execute!(stdout(), Clear(crossterm::terminal::ClearType::All)).unwrap();
-        self.objects.iter_mut().for_each(|obj| obj.display(0))
+        let mut temp: Vec<Option<InputReturn>> = vec![];
+        self.objects
+            .iter_mut()
+            .for_each(|obj| temp.push(obj.display(0)));
+        temp.retain(|obj| obj.is_some());
+        temp.iter_mut()
+            .for_each(|obj| self.inputs.push(obj.clone().unwrap()));
     }
 }

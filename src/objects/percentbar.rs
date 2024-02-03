@@ -2,7 +2,7 @@ use crate::Object;
 use crossterm::{cursor::*, execute, terminal::*};
 use std::{fmt::Debug, io::stdout, println};
 
-use super::Obj;
+use super::{InputReturn, Obj};
 
 /// Displays using percent format.
 #[derive(Debug, Clone, Default)]
@@ -12,7 +12,7 @@ pub struct Percentbar {
 }
 
 impl Object for Percentbar {
-    fn display(self: &mut Percentbar, tabs: i32) {
+    fn display(self: &mut Percentbar, tabs: i32) -> Option<InputReturn> {
         execute!(stdout(), MoveToNextLine(1),).unwrap();
         for _ in 0..tabs {
             print!(" ")
@@ -29,7 +29,9 @@ impl Object for Percentbar {
         {
             print!("-");
         }
-        println!("] {}%", self.progress)
+        println!("] {}%", self.progress);
+
+        return None;
     }
 
     fn try_into(&mut self, name: &str) -> Option<Obj> {
@@ -40,4 +42,8 @@ impl Object for Percentbar {
     }
 }
 
-impl Percentbar {}
+impl Percentbar {
+    pub fn new(progress: i32, name: String) -> Box<dyn Object> {
+        Box::new(Percentbar { name, progress })
+    }
+}

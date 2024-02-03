@@ -8,11 +8,19 @@ pub mod user_input;
 #[derive(Debug)]
 pub enum Obj<'a> {
     Percentbar(&'a mut Percentbar),
-    UserInput(&'a mut UserInput)
+    UserInput(&'a mut UserInput),
+}
+
+#[derive(Debug, Clone)]
+pub struct InputReturn {
+    name: String,
+    value: String,
 }
 
 pub trait Object: Debug {
-    fn display(&mut self, _tabs: i32) {}
+    fn display(&mut self, _tabs: i32) -> Option<InputReturn> {
+        None
+    }
 
     /// I am about to give up and just want this to work.
     /// It is 2 am and i dont give a fuck anymore

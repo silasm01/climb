@@ -1,12 +1,8 @@
 use crate::Object;
 use crossterm::{cursor::*, execute};
-use std::{
-    fmt::Debug,
-    io::stdout,
-    println,
-};
+use std::{fmt::Debug, io::stdout, println};
 
-use super::Obj;
+use super::{InputReturn, Obj};
 
 #[derive(Debug, Clone, Default)]
 pub enum ChoiceStyle {
@@ -16,15 +12,26 @@ pub enum ChoiceStyle {
 }
 
 impl Object for UserInput {
-    fn display(self: &mut UserInput, tabs: i32) {
+    fn display(self: &mut UserInput, tabs: i32) -> Option<InputReturn> {
         execute!(stdout(), MoveToNextLine(1)).unwrap();
         for _ in 0..tabs {
             print!(" ")
         }
-        print!("{} [", self.text);
-        self.choices.iter().for_each(|choice| print!("{}/", choice));
-        execute!(stdout(), MoveLeft(1)).unwrap();
-        println!("]");
+        match self.style {
+            ChoiceStyle::HoriList => {
+                print!("{} [", self.text);
+                self.choices.iter().for_each(|choice| print!("{}/", choice));
+                execute!(stdout(), MoveLeft(1)).unwrap();
+                println!("]");
+            }
+            ChoiceStyle::NumList => {
+                println!("{}", self.text);
+                self.choices
+                    .iter()
+                    .enumerate()
+                    .for_each(|(i, choice)| println!("{}.{choice}", i + 1))
+            }
+        }
 
         std::io::stdin().read_line(&mut self.input).unwrap();
 
@@ -37,7 +44,12 @@ impl Object for UserInput {
         {
             self.input = "".to_string();
             println!("Invalid choice. Try again. {}", self.input);
-            self.display(tabs)
+            return Some(self.display(tabs).unwrap());
+        } else {
+            return Some(InputReturn {
+                name: self.name.clone(),
+                value: self.input.clone().trim().to_string(),
+            });
         }
     }
 
@@ -59,4 +71,22 @@ pub struct UserInput {
     pub strict_input: bool,
 }
 
-impl UserInput {}
+impl UserInput {
+    pub fn new(
+        name: String,
+        text: String,
+        choices: Vec<String>,
+        style: ChoiceStyle,
+        strict_input: bool,
+    ) -> Box<dyn Object> {
+        Box::new(UserInput {
+            choices,
+            input: "".to_string(),
+            name,
+            style,
+            strict_input,
+            text,
+        })
+    }
+}
+
