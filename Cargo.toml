@@ -1,4 +1,3 @@
-workspace = { members = ["clitest"] }
 [package]
 name = "climb"
 version = "0.1.0"
