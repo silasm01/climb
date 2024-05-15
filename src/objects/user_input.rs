@@ -13,7 +13,7 @@ pub enum ChoiceStyle {
 
 impl Object for UserInput {
     fn display(self: &mut UserInput, tabs: i32) -> Option<InputReturn> {
-        execute!(stdout(), MoveToNextLine(1)).unwrap();
+        // execute!(stdout(), MoveToNextLine(1)).unwrap();
         for _ in 0..tabs {
             print!(" ")
         }
@@ -33,23 +33,35 @@ impl Object for UserInput {
             }
         }
 
-        std::io::stdin().read_line(&mut self.input).unwrap();
+        if self.input.is_empty() {
+            execute!(stdout(), Show).unwrap();
 
-        // This keeps asking the user for a valid input if strict input is true
-        if self.strict_input
-            && !self
-                .clone()
-                .choices
-                .contains(&self.input.trim().to_string())
-        {
-            self.input = "".to_string();
-            println!("Invalid choice. Try again. {}", self.input);
-            return Some(self.display(tabs).unwrap());
+            std::io::stdin().read_line(&mut self.input).unwrap();
+
+            // This keeps asking the user for a valid input if strict input is true
+            if self.strict_input
+                && !self
+                    .clone()
+                    .choices
+                    .contains(&self.input.trim().to_string())
+            {
+                self.input = "".to_string();
+                println!("Invalid choice. Try again. {}", self.input);
+                self.failed_attempts += 1;
+                return Some(self.display(tabs).unwrap());
+            } else {
+                execute!(stdout(), Hide).unwrap();
+                return Some(InputReturn {
+                    name: self.name.clone(),
+                    value: self.input.clone().trim().to_string(),
+                });
+            }
         } else {
-            return Some(InputReturn {
-                name: self.name.clone(),
-                value: self.input.clone().trim().to_string(),
-            });
+            for _ in 0..self.failed_attempts {
+                execute!(stdout(), MoveToNextLine(3)).unwrap();
+            }
+            print!("{}", self.input);
+            return None;
         }
     }
 
@@ -69,6 +81,7 @@ pub struct UserInput {
     pub input: String,
     pub style: ChoiceStyle,
     pub strict_input: bool,
+    failed_attempts: i32,
 }
 
 impl UserInput {
@@ -86,7 +99,7 @@ impl UserInput {
             style,
             strict_input,
             text,
+            failed_attempts: 0,
         })
     }
 }
-
