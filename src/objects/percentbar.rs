@@ -4,7 +4,6 @@ use std::{fmt::Debug, println};
 
 use super::{InputReturn, Obj};
 
-/// Displays using percent format.
 #[derive(Debug, Clone, Default)]
 pub struct Percentbar {
     pub progress: i32,
@@ -13,7 +12,6 @@ pub struct Percentbar {
 
 impl Object for Percentbar {
     fn display(self: &mut Percentbar, tabs: i32) -> Option<InputReturn> {
-        // execute!(stdout(), MoveToNextLine(1),).unwrap();
         let prog = self.progress.clamp(0, 100);
         for _ in 0..tabs {
             print!(" ")
@@ -23,22 +21,20 @@ impl Object for Percentbar {
         let line_len = (size().unwrap().0
             - self.name.len() as u16
             - 5
+            - 1
             - tabs as u16
             - prog.to_string().len() as u16)
             * prog as u16
-            / 100
-            - 1;
+            / 100;
 
         for _ in 0..line_len {
             print!("-");
         }
 
-        // print!("{}", line_len % 2);
-
         if line_len % 2 == 0 {
-            print!("c");
-        } else {
             print!("C");
+        } else {
+            print!("c");
         }
 
         for _ in 0..(size().unwrap().0
@@ -54,7 +50,7 @@ impl Object for Percentbar {
 
         println!("] {}%", prog);
 
-        return None;
+        None
     }
 
     fn try_into(&mut self, name: &str) -> Option<Obj> {

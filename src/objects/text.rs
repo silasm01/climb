@@ -3,11 +3,14 @@ use super::{InputReturn, Obj, Object};
 #[derive(Debug, Clone)]
 pub struct Text {
     name: String,
-    pub(crate) text: String,
+    pub text: String,
 }
 
 impl Object for Text {
     fn display(&mut self, _tabs: i32) -> Option<InputReturn> {
+        for _ in 0.._tabs {
+            print!(" ")
+        }
         println!("{}", self.text);
         None
     }

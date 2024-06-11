@@ -1,9 +1,7 @@
-workspace = { members = ["clitest"] }
 [package]
 name = "climb"
 version = "0.1.0"
-authors = ["Mohtashim"]
+authors = ["silasm01"]
 
 [dependencies]
-crossterm = "0.26.1"
-match_cast = "0.1.2"
+crossterm = "0.27"

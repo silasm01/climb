@@ -13,7 +13,6 @@ pub enum ChoiceStyle {
 
 impl Object for UserInput {
     fn display(self: &mut UserInput, tabs: i32) -> Option<InputReturn> {
-        // execute!(stdout(), MoveToNextLine(1)).unwrap();
         for _ in 0..tabs {
             print!(" ")
         }

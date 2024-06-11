@@ -1,6 +1,5 @@
 pub mod commands;
 pub mod objects;
-extern crate match_cast;
 
 use commands::Command;
 use objects::{Obj, Object};
@@ -126,7 +125,6 @@ impl CLIhandler {
             self.init();
         }
 
-        // execute!(stdout(), Clear(ClearType::All)).unwrap();
         execute!(stdout(), MoveTo(0, 0)).unwrap();
         let mut temp: Vec<Option<InputReturn>> = vec![];
         self.objects.iter_mut().for_each(|obj| {
