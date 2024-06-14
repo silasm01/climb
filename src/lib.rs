@@ -145,6 +145,17 @@ impl CLIhandler {
         self.mode = Mode::Alt;
         execute!(stdout(), EnterAlternateScreen, Hide).unwrap();
     }
+
+    pub fn change_progress<F>(&mut self, name: &str, op: F)
+    where
+        F: FnOnce(&mut i32),
+    {
+        match self.get_object(name) {
+            Some(Obj::Percentbar(p)) => op(&mut p.progress),
+            None => panic!("Object not found"),
+            _ => panic!("Object not correct type"),
+        }
+    }
 }
 
 impl Drop for CLIhandler {

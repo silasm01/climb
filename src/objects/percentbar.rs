@@ -66,21 +66,3 @@ impl Percentbar {
         Box::new(Percentbar { name, progress })
     }
 }
-
-/// Adds progress to a percentbar object
-/// # Example
-/// ```
-/// let mut cli = climb::CLIhandler::new();
-/// cli.add_object(climb::objects::percentbar::Percentbar::new(45, "test".to_string()));
-/// climb::add_progress!(cli, "test", 1);
-/// ```
-#[macro_export]
-macro_rules! add_progress {
-    ($cli:expr, $name:expr, $add:expr) => {
-        match $cli.get_object($name) {
-            Some(climb::objects::Obj::Percentbar(p)) => p.progress += $add,
-            None => panic!("Object not found"),
-            _ => panic!("Object not correct type"),
-        }
-    };
-}
